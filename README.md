@@ -353,11 +353,11 @@ iptables -A INPUT -p udp -j DROP
 
 ketika membuka Port 8080 :
 
-![Test 8080 Port 8080](/images/no-2-8080.mp4)
+https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/92865110/e295348d-4a46-4a82-99e5-f8c2c74975fa
 
 Membuka port lain :
 
-![Test Another Port](/images/no-2-40.mp4)
+https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/92865110/041d8636-ac99-447e-9545-c785f8842d2c
 
 3. Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
 
@@ -375,7 +375,7 @@ iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j
 
 **Hasil**
 
-![Testing Nomor 3](/images/no-3.mp4)
+https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/92865110/79f3c22f-59d0-4a97-a5f8-0131560b5b6a
 
 4. Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
 
@@ -387,7 +387,7 @@ iptables -A INPUT -p tcp --dport 22 -j DROP
 
 **Hasil**
 
-![Testing Nomoer 4](/images/no-4.mp4)
+https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/92865110/9b49c79a-005d-4c91-a52d-65bd64e8c03c
 
 5. Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
   - Sein & Stark (Web Server)
@@ -398,7 +398,7 @@ iptables -A INPUT -p tcp --dport 80 -m time --timestart 08:00 --timestop 16:00 -
 
 **Hasil**
 
-![Testing No 5 dan 6](/images/no-5-6.mp4)
+https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/92865110/bed858f6-755b-40a9-9b5f-277ff3ae39e5
 
 6. Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
 
@@ -413,8 +413,7 @@ iptables -A INPUT -p tcp --dport 80 -m time --timestart 11:00 --timestop 13:00 -
 
 **Hasil**
 
-![Testing No 5 dan 6](/images/no-5-6.mp4)
-
+https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/92865110/0e6f4bbb-79fb-4aae-bcb7-6623412b5be6
 
 7. Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
   - Sein
