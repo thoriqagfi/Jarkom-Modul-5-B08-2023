@@ -324,6 +324,14 @@ ETH0_IP=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source $ETH0_IP
 ```
 
+Karena kita menggunakan IP DHCP sebagai sebagai jalur keluar ke internet, maka kita harus mengambil IP dari eth0 aura sebagai jalur keluar. `ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'` akan mereturn IP dari eth0 Aura
+
+Selanjutnya, untuk menyambungkan ke nat, maka kita masukkan ke NAT Table dengan POSTROUTING chain : `iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source $ETH0_IP`
+
+**Hasil**
+
+![IP Aura](/images/1-aura.png)
+
 2. Kalian diminta untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP.
 
   - GrobeForest, Stark, and Sein
@@ -341,6 +349,16 @@ iptables -A INPUT -p tcp -j DROP
 iptables -A INPUT -p udp -j DROP
 ```
 
+**Hasil**
+
+ketika membuka Port 8080 :
+
+![Test 8080 Port 8080](/images/no-2-8080.mp4)
+
+Membuka port lain :
+
+![Test Another Port](/images/no-2-40.mp4)
+
 3. Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
 
   - Revolte & Richter (DHCP server & DNS Server)
@@ -352,6 +370,13 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
 ```
 
+- `--connlimit-above 3` adalah parameter menentukan batas koneksi yang terhubung
+- `--connlimit-mask 0` adalah parameter menentukan mask
+
+**Hasil**
+
+![Testing Nomor 3](/images/no-3.mp4)
+
 4. Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
 
   - Sein & Stark (Web Server)
@@ -360,12 +385,20 @@ iptables -A INPUT -p tcp --dport 22 -s 192.182.4.0/22 -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -j DROP
 ```
 
+**Hasil**
+
+![Testing Nomoer 4](/images/no-4.mp4)
+
 5. Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
   - Sein & Stark (Web Server)
 ```bash
 # Izinkan akses ke Web Server pada senin-jumat pukul 08:00-16:00
 iptables -A INPUT -p tcp --dport 80 -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT
 ```
+
+**Hasil**
+
+![Testing No 5 dan 6](/images/no-5-6.mp4)
 
 6. Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
 
@@ -377,6 +410,11 @@ iptables -A INPUT -p tcp --dport 80 -m time --timestart 12:00 --timestop 13:00 -
 # Larangan akses pada hari jumat pada 11:00 - 13:00
 iptables -A INPUT -p tcp --dport 80 -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j DROP
 ```
+
+**Hasil**
+
+![Testing No 5 dan 6](/images/no-5-6.mp4)
+
 
 7. Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
   - Sein
@@ -397,14 +435,38 @@ iptables -A PREROUTING -t nat tcp -d 192.182.0.4 --dport 443 -j DNAT --to-destin
 
 8. Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
 
+  - Sein
 ```bash
+# Soal 8
+iptables -A INPUT -s 192.182.0.2 -j DROP
+```
 
+  - Stark
+```bash
+# Soal 8
+iptables -A INPUT -s 192.182.0.2 -j LOG --log-prefix "Masa pemilu kawan, coalition Not Allowed : " --log-level 6
+
+iptables -A INPUT -s 192.182.0.2 -j DROP
 ```
 
 9. Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap)
 
+  - Sein
 ```bash
+# Soal No 9
+iptables -A INPUT -p tcp --syn -m recent --name portscan --set
+iptables -A INPUT -p tcp --syn -m recent --name portscan --rcheck --seconds 600 --hitcount  20  -j  DROP
+```
 
+  - Stark
+```bash
+# Soal No 9
+iptables -N PORTSCAN
+iptables -A PORTSCAN -m recent --set --name portscan
+iptables -A PORTSCAN -m recent --update --seconds 600 --hitcount 20 --name portscan -j LOG --log-prefix "Portscan Detected: " --log-level 4
+iptables -A PORTSCAN -m recent --update --seconds 600 --hitcount 20 --name portscan -j DROP
+iptables -A INPUT -p tcp --tcp-flags SYN,ACK,FIN,RST RST -m limit --limit 2/s -j ACCEPT
+iptables -A INPUT -p tcp --tcp-flags SYN,ACK,FIN,RST RST -j PORTSCAN
 ```
 
 10. Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
