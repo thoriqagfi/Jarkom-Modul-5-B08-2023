@@ -436,17 +436,16 @@ iptables -A PREROUTING -t nat tcp -d 192.182.0.4 --dport 443 -j DNAT --to-destin
 
   - Sein
 ```bash
-# Soal 8
-iptables -A INPUT -s 192.182.0.2 -j DROP
+### apabila ingin meng-drop TCP 
+iptables -A INPUT -p tcp -s 192.182.0.2 --dport 80 -m time --datestart 2023-10-19T00:00 --datestop 2024-02-15T00:00 -j DROP
+
+### namun ingin drop semua, bisa digunakan :
+iptables -A INPUT -s 192.182.0.2 -m time --datestart 2023-10-19T00:00 --datestop 2024-02-15T00:00 -j DROP
+
 ```
 
-  - Stark
-```bash
-# Soal 8
-iptables -A INPUT -s 192.182.0.2 -j LOG --log-prefix "Masa pemilu kawan, coalition Not Allowed : " --log-level 6
+<img width="632" alt="Screenshot 2023-12-16 at 01 27 30" src="https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/86884506/a9daface-4509-48d8-b2aa-5a89e1dc67b8">
 
-iptables -A INPUT -s 192.182.0.2 -j DROP
-```
 
 9. Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap)
 
