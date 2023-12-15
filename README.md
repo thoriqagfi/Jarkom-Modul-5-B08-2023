@@ -469,6 +469,11 @@ iptables -A INPUT -p tcp --tcp-flags SYN,ACK,FIN,RST RST -j PORTSCAN
 
 10. Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
 
-```bash
+logging dapat ditambahkan dengan syntax iptables berikut yang dijalankan di semua node server dan router
 
+```bash
+iptables -A INPUT -j LOG --log-level debug --log-prefix "Dropped Packet: " -m limit --limit 1/second --limit-burst 10
 ```
+<img width="1274" alt="Screenshot 2023-12-16 at 01 41 57" src="https://github.com/thoriqagfi/Jarkom-Modul-5-B08-2023/assets/86884506/e553caa1-af9b-4e86-b26f-70cae46fa30e">
+
+dapat dilihat, pada server sein, telah ditambahkan rules tentang log dengan prefix "paket didrop:"
